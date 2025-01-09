@@ -11,9 +11,7 @@ import StudentBody from "./StudentBody";
 import CreateProject from "./CreateProject";
 import WriterSignUp from "./WriterSignUp";
 import UserSignUp from "./UserSignUp";
-
-
-
+import WriterSearch from "./WriterSearch"; // Ensure this is imported
 
 function App() {
   return (
@@ -31,12 +29,18 @@ function App() {
           <Route path="dashboard" element={<StudentDashboard />} />
         </Route>
 
+        {/* StudentBody route */}
+        <Route path="/StudentBody" element={<StudentBody />} />
+
+        {/* Independent CreateProject route */}
+        <Route path="/CreateProject" element={<CreateProject />} />
+
+        {/* Independent WriterSearch route */}
+        <Route path="/WriterSearch" element={<WriterSearch />} />
+
         {/* Independent routes */}
         <Route path="/app/writer-signup" element={<WriterSignUp />} />
         <Route path="/app/user-signup" element={<UserSignUp />} />
-        <Route path="/app/createproject" element={<CreateProject />} />
-        <Route path="studentBody" element={<StudentBody />} />
-        
 
         {/* Fallback for unmatched routes */}
         <Route path="*" element={<div>404: Page Not Found</div>} />

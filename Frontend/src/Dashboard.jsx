@@ -16,10 +16,15 @@ const WriterDashboard = () => {
   const fetchMetrics = async () => {
     try {
       const email = localStorage.getItem("userEmail"); // Get email from localStorage
-      const response = await axios.get(`http://localhost:5000/api/writers/metrics/${email}`);
+      if (!email) throw new Error("User email not found in local storage.");
+
+      const response = await axios.get(
+        `http://localhost:5000/api/writers/metrics/${email}`
+      );
       setMetrics(response.data);
       setLoading(false);
     } catch (err) {
+      console.error("Fetch metrics error:", err.response || err.message);
       setError(err.response?.data?.message || "Error fetching writer metrics.");
       setLoading(false);
     }
@@ -46,7 +51,9 @@ const WriterDashboard = () => {
 
   return (
     <div className="p-6">
-      <h1 className="text-3xl font-bold mb-4">{metrics.fullName ? metrics.fullName : 'Writer'}'s Dashboard</h1>
+      <h1 className="text-3xl font-bold mb-4">
+        {metrics.fullName ? metrics.fullName : "Writer"}'s Dashboard
+      </h1>
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-4">
         <div className="p-4 bg-white shadow-md rounded-lg text-center">
           <p className="text-xl font-bold">{metrics.tasksInProgress}</p>

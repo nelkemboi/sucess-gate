@@ -4,6 +4,22 @@ const User = require("../models/User");
 
 const router = express.Router();
 
+// Helper function to generate a unique userID
+async function generateUniqueUserID() {
+  let userID;
+  let isUnique = false;
+
+  while (!isUnique) {
+    userID = `AS${Math.floor(100000 + Math.random() * 900000)}`; // Generate "AS" + 6 digits
+    const existingUser = await User.findOne({ userID }); // Check for uniqueness in the database
+    if (!existingUser) {
+      isUnique = true;
+    }
+  }
+
+  return userID;
+}
+
 // Register a User
 router.post("/register", async (req, res) => {
   try {
@@ -15,11 +31,14 @@ router.post("/register", async (req, res) => {
       return res.status(400).json({ message: "User already exists." });
     }
 
+    // Generate a unique userID
+    const userID = await generateUniqueUserID();
+
     // Hash password
     const hashedPassword = await bcrypt.hash(password, 10);
 
     // Save user to database
-    const user = new User({ fullName, email, password: hashedPassword });
+    const user = new User({ fullName, email, password: hashedPassword, userID });
     await user.save();
 
     res.status(201).json({ message: "User registered successfully", user });

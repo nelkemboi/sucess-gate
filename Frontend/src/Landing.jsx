@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import BackgroundImage from "/images/student.jpg"; // Adjust the path if needed
@@ -15,7 +15,17 @@ const Landing = () => {
   const [showWriterArena, setShowWriterArena] = useState(false); // For WRITER ARENA functionality
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [alertMessage, setAlertMessage] = useState(""); // Track alert message
+  const [userID, setUserID] = useState(""); // State for User ID
   const navigate = useNavigate(); // For navigation
+
+  useEffect(() => {
+    // Get the user ID from localStorage on component mount
+    const storedUserID = localStorage.getItem("userID");
+    if (storedUserID) {
+      setUserID(storedUserID); // Set the userID from localStorage if it exists
+    }
+  }, []);
 
   const handleLogin = async () => {
     try {
@@ -25,49 +35,46 @@ const Landing = () => {
         : "http://localhost:5000/api/users/login";
   
       // Send login request to the appropriate endpoint
-      const response = await axios.post(endpoint, {
-        email,
-        password,
-      });
-  
+      const response = await axios.post(endpoint, { email, password });
       const { token, user } = response.data; // Extract token and user data
   
-      // Store token in localStorage
+      // Store authentication token and user details in localStorage
       localStorage.setItem("authToken", token);
       localStorage.setItem("userEmail", user.email);
+  
+      if (isExpert) {
+        localStorage.setItem("writerId", user.id); // Store writerId for experts
+        setUserID(user.id); // Update state with writerId
+      } else {
+        localStorage.setItem("userID", user.userID); // Store userID for users
+        setUserID(user.userID); // Update state with userID
+      }
   
       // Update login state
       setIsLoggedIn(true);
   
-      alert("Login Successful!");
-  
       // Redirect to the appropriate dashboard
-      if (isExpert) {
-        navigate("/app"); // Redirect to expert dashboard
-      } else {
-        navigate("/StudentBody"); // Redirect to user dashboard
-      }
+      navigate(isExpert ? "/app" : "/StudentBody");
     } catch (error) {
-      // Log error for debugging (optional)
       console.error("Login Error:", error.response?.data || error.message);
-  
-      // Show error message to the user
-      alert(error.response?.data?.message || "Invalid credentials! Please try again.");
+      setAlertMessage(error.response?.data?.message || "Invalid credentials! Please try again.");
     }
   };
-  
   
   const handleLogout = () => {
     // Clear session data
     localStorage.removeItem("authToken");
     localStorage.removeItem("userEmail");
-    setIsLoggedIn(false); // Log the user out
-    setEmail(""); // Clear email
-    setPassword(""); // Clear password
-    alert("You have been logged out.");
+    localStorage.removeItem("writerId");
+    localStorage.removeItem("userID");
+    setIsLoggedIn(false);
+    setUserID("");
+    setEmail("");
+    setPassword("");
+    setAlertMessage("You have been logged out.");
     navigate("/");
   };
-
+  
   const handleSignUp = () => {
     setShowWriterArena(false); // Close the modal
     if (isExpert) {
@@ -201,6 +208,10 @@ const Landing = () => {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
               />
+              {/* Alert message below password field */}
+              {alertMessage && (
+                <p className="mt-4 text-center text-red-500">{alertMessage}</p>
+              )}
               <button
                 className="mt-4 w-full px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-500"
                 onClick={handleLogin}

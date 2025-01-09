@@ -2,12 +2,10 @@ import React, { useState } from "react";
 import { Link, Outlet, useNavigate } from "react-router-dom";
 import { FaBell, FaQuestionCircle, FaCog } from "react-icons/fa";
 import { IoMdChatboxes } from "react-icons/io";
-import CreateProject from "./CreateProject";
 
 const Navigation = ({ onLogout }) => {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [activeTab, setActiveTab] = useState("Active");
-  const [showCreateProject, setShowCreateProject] = useState(false);
   const [isChatOpen, setIsChatOpen] = useState(false); // Chatbox toggle state
   const [messages, setMessages] = useState([]); // Chat messages
   const [input, setInput] = useState(""); // Chat input field
@@ -23,6 +21,12 @@ const Navigation = ({ onLogout }) => {
     } else {
       navigate("/"); // Navigate to the landing page if no `onLogout` function provided
     }
+  };
+
+  // Adjusted handleCreateProjectClick
+  const handleCreateProjectClick = () => {
+    // Ensure user is redirected to the CreateProject route
+    navigate("/CreateProject");
   };
 
   const handleSendMessage = () => {
@@ -42,14 +46,12 @@ const Navigation = ({ onLogout }) => {
         </div>
         <div className="flex items-center space-x-6 relative">
           <FaBell size={20} className="text-gray-700" />
-          {!showCreateProject && (
-            <button
-              className="bg-orange-500 text-white px-4 py-2 rounded-md hover:bg-orange-600 transition"
-              onClick={() => setShowCreateProject(true)}
-            >
-              Create Project
-            </button>
-          )}
+          <button
+            className="bg-orange-500 text-white px-4 py-2 rounded-md hover:bg-orange-600 transition"
+            onClick={handleCreateProjectClick}
+          >
+            Create Project
+          </button>
           <FaQuestionCircle size={20} className="text-gray-700" />
           <span className="text-gray-700 cursor-pointer">Help</span>
           <div className="relative">
@@ -86,76 +88,61 @@ const Navigation = ({ onLogout }) => {
         </p>
       </div>
 
-      {!showCreateProject && (
-        <div className="bg-white border-b shadow-md">
-          <div className="flex space-x-6 px-6 py-3">
-            {tabs.map((tab) => (
-              <button
-                key={tab}
-                className={`text-gray-700 font-semibold ${
-                  activeTab === tab ? "border-b-2 border-orange-500" : "hover:text-orange-500"
-                }`}
-                onClick={() => setActiveTab(tab)}
-              >
-                {tab}
-              </button>
-            ))}
-          </div>
+      <div className="bg-white border-b shadow-md">
+        <div className="flex space-x-6 px-6 py-3">
+          {tabs.map((tab) => (
+            <button
+              key={tab}
+              className={`text-gray-700 font-semibold ${
+                activeTab === tab ? "border-b-2 border-orange-500" : "hover:text-orange-500"
+              }`}
+              onClick={() => setActiveTab(tab)}
+            >
+              {tab}
+            </button>
+          ))}
         </div>
-      )}
+      </div>
 
       <div className="p-6 overflow-auto flex-grow bg-gray-100">
-        {showCreateProject ? (
-          <CreateProject
-            onBack={() => {
-              setShowCreateProject(false);
-              setActiveTab("Student Body");
-            }}
-          />
-        ) : (
-          <>
-            {activeTab === "Active" && (
-              <div>
-                <div className="mb-4">
-                  <input
-                    type="text"
-                    placeholder="Search for question"
-                    className="w-full px-4 py-2 border border-gray-300 rounded-md"
-                  />
-                </div>
-                <table className="w-full bg-white border rounded shadow">
-                  <thead>
-                    <tr className="bg-gray-200">
-                      <th className="px-4 py-2 text-left">Title</th>
-                      <th className="px-4 py-2 text-left">Type</th>
-                      <th className="px-4 py-2 text-left">Time Remaining</th>
-                      <th className="px-4 py-2 text-left">Tutor</th>
-                      <th className="px-4 py-2 text-left">Status</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <tr>
-                      <td className="px-4 py-2 text-center" colSpan="5">
-                        <div className="flex flex-col items-center">
-                          <div className="w-24 h-24 bg-gray-100 rounded-full flex items-center justify-center">
-                            <span className="text-gray-400">🌴</span>
-                          </div>
-                          <p className="text-gray-500 mt-4">
-                            You have no active questions yet.
-                          </p>
-                        </div>
-                      </td>
-                    </tr>
-                  </tbody>
-                </table>
-              </div>
-            )}
-
-            {activeTab === "Completed" && <p className="text-gray-500">No completed questions to show.</p>}
-
-            {activeTab === "Notebank Unlocks" && <p className="text-gray-500">No Notebank unlocks to show.</p>}
-          </>
+        {activeTab === "Active" && (
+          <div>
+            <div className="mb-4">
+              <input
+                type="text"
+                placeholder="Search for question"
+                className="w-full px-4 py-2 border border-gray-300 rounded-md"
+              />
+            </div>
+            <table className="w-full bg-white border rounded shadow">
+              <thead>
+                <tr className="bg-gray-200">
+                  <th className="px-4 py-2 text-left">Title</th>
+                  <th className="px-4 py-2 text-left">Type</th>
+                  <th className="px-4 py-2 text-left">Time Remaining</th>
+                  <th className="px-4 py-2 text-left">Tutor</th>
+                  <th className="px-4 py-2 text-left">Status</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td className="px-4 py-2 text-center" colSpan="5">
+                    <div className="flex flex-col items-center">
+                      <div className="w-24 h-24 bg-gray-100 rounded-full flex items-center justify-center">
+                        <span className="text-gray-400">🌴</span>
+                      </div>
+                      <p className="text-gray-500 mt-4">
+                        You have no active questions yet.
+                      </p>
+                    </div>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
         )}
+        {activeTab === "Completed" && <p className="text-gray-500">No completed questions to show.</p>}
+        {activeTab === "Notebank Unlocks" && <p className="text-gray-500">No Notebank unlocks to show.</p>}
         <Outlet />
       </div>
 

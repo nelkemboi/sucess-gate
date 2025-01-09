@@ -46,6 +46,12 @@ router.post("/register", upload.array("attachments", 2), async (req, res) => {
       experience,
     } = req.body;
 
+    // Check if the email already exists
+    const existingWriter = await Writer.findOne({ email });
+    if (existingWriter) {
+      return res.status(400).json({ message: "Email already exists." });
+    }
+
     // Hash password
     const hashedPassword = await bcrypt.hash(password, 10);
 
@@ -61,7 +67,7 @@ router.post("/register", upload.array("attachments", 2), async (req, res) => {
       qualifications,
       experience,
       attachments,
-      isApproved: false, // Explicitly set to false for pending status
+      isApproved: false, // Set as pending by default
     });
 
     await newWriter.save();
@@ -69,10 +75,12 @@ router.post("/register", upload.array("attachments", 2), async (req, res) => {
   } catch (error) {
     console.error("Error saving writer:", error);
     if (error.code === 11000) {
-      res.status(400).json({ message: "Email already exists." });
-    } else {
-      res.status(500).json({ message: "An error occurred. Please try again." });
+      if (error.keyPattern?.email) {
+        return res.status(400).json({ message: "Email already exists." });
+      }
+      return res.status(400).json({ message: "Duplicate field error." });
     }
+    res.status(500).json({ message: "An error occurred. Please try again." });
   }
 });
 
@@ -96,7 +104,6 @@ router.post("/login", async (req, res) => {
       return res.status(401).json({ message: "Invalid credentials." });
     }
 
-    // Generate token
     const token = jwt.sign(
       { id: writer._id, email: writer.email, role: "expert" },
       process.env.JWT_SECRET,
@@ -117,30 +124,6 @@ router.post("/login", async (req, res) => {
   }
 });
 
-// Fetch writer metrics (with fullName)
-router.get("/metrics/:email", async (req, res) => {
-  try {
-    const { email } = req.params;
-    const writer = await Writer.findOne({ email, isApproved: true });
-
-    if (!writer) {
-      return res.status(404).json({ message: "Writer not found or not approved." });
-    }
-
-    res.status(200).json({
-      fullName: writer.fullName,
-      tasksInProgress: writer.tasksInProgress || 0,
-      questionsAnswered: writer.questionsAnswered || 0,
-      reviews: writer.reviews || 0,
-      onTimeDelivery: writer.onTimeDelivery || 100, // default to 100 if not available
-      cancelledTasks: writer.cancelledTasks || 0,
-    });
-  } catch (error) {
-    console.error("Error fetching writer metrics:", error);
-    res.status(500).json({ message: "Failed to fetch writer metrics." });
-  }
-});
-
 // Fetch all approved writers
 router.get("/approved", async (req, res) => {
   try {
@@ -157,6 +140,35 @@ router.get("/approved", async (req, res) => {
   } catch (error) {
     console.error("Error fetching approved writers:", error);
     res.status(500).json({ message: "Failed to fetch approved writers." });
+  }
+});
+
+// Fetch writer metrics by email
+router.get("/metrics/:email", async (req, res) => {
+  try {
+    const { email } = req.params;
+
+    if (!email) {
+      return res.status(400).json({ message: "Email is required." });
+    }
+
+    const writer = await Writer.findOne({ email, isApproved: true });
+
+    if (!writer) {
+      return res.status(404).json({ message: "Writer not found or not approved." });
+    }
+
+    res.status(200).json({
+      fullName: writer.fullName,
+      tasksInProgress: writer.tasksInProgress || 0,
+      questionsAnswered: writer.questionsAnswered || 0,
+      reviews: writer.reviews || 0,
+      onTimeDelivery: writer.onTimeDelivery || 100,
+      cancelledTasks: writer.cancelledTasks || 0,
+    });
+  } catch (error) {
+    console.error("Error fetching writer metrics:", error);
+    res.status(500).json({ message: "Failed to fetch writer metrics." });
   }
 });
 

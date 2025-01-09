@@ -1,7 +1,9 @@
-// WriterSearch.js
 import React from "react";
+import { useNavigate } from "react-router-dom";
 
 const WriterSearch = ({ onBack, onAcceptBid }) => {
+  const navigate = useNavigate(); // Initialize navigate function
+
   const writers = [
     {
       name: "Obute G",
@@ -57,7 +59,7 @@ const WriterSearch = ({ onBack, onAcceptBid }) => {
 
         <button
           className="mt-4 bg-gray-300 text-gray-700 px-4 py-2 rounded-md hover:bg-gray-400"
-          onClick={onBack}
+          onClick={() => navigate("/StudentBody")} // Navigate back to CreateProject
         >
           Back to Project Creation
         </button>
