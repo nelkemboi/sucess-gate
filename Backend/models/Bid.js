@@ -13,6 +13,10 @@ const bidSchema = new mongoose.Schema(
       ref: "Writer", // Reference to the 'Writer' model
       required: true,
     },
+    fullName: { 
+      type: String, 
+      required: true,
+    },
     price: {
       type: Number,
       required: true,

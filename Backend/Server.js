@@ -13,7 +13,8 @@ const writerRoutes = require("./routes/writer");
 const adminRoutes = require("./routes/admin");
 const projectRoutes = require("./routes/userProjects");
 const bidRoutes = require("./routes/bid");
-const studentsBidRoutes = require("./routes/studentsBids"); // Import studentsbid.js
+const paymentRoutes = require("./routes/studentsPay"); // Import payment routes
+const taskRoutes = require("./routes/task"); // Import tasks routes
 
 // Initialize Express app and HTTP server
 const app = express();
@@ -66,7 +67,8 @@ app.use("/api/writers", writerRoutes);
 app.use("/api/admin", adminRoutes);
 app.use("/api/projects", projectRoutes);
 app.use("/api/bids", bidRoutes);
-app.use("/api/students/bids", studentsBidRoutes); // Add studentsbid.js route
+app.use("/api/payment", paymentRoutes); // Add payment routes
+app.use("/api/tasks", taskRoutes); // Add tasks routes
 
 // Test Route
 app.get("/", (req, res) => {

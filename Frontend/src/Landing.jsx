@@ -43,9 +43,28 @@ const Landing = () => {
       localStorage.setItem("userEmail", user.email);
   
       if (isExpert) {
-        localStorage.setItem("writerId", user.id); // Store writerId for experts
-        setUserID(user.id); // Update state with writerId
+        if (!user.writerId) {
+          throw new Error("Writer ID is missing from the response.");
+        }
+  
+        localStorage.setItem("writerId", user.writerId); // Ensure writerId is stored correctly
+        setUserID(user.writerId); // Update state with writerId
+  
+        // Fetch writer metrics and store only required fields
+        const metricsResponse = await axios.get("http://localhost:5000/api/writers/metrics", {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+  
+        const { id, fullName, questionsAnswered, reviews, onTimeDelivery } = metricsResponse.data;
+  
+        // Store selected metrics in local storage
+        const writerMetrics = { id, fullName, questionsAnswered, reviews, onTimeDelivery };
+        localStorage.setItem("writerMetrics", JSON.stringify(writerMetrics)); // Store writerMetrics
       } else {
+        if (!user.userID) {
+          throw new Error("User ID is missing from the response.");
+        }
+  
         localStorage.setItem("userID", user.userID); // Store userID for users
         setUserID(user.userID); // Update state with userID
       }
@@ -60,6 +79,8 @@ const Landing = () => {
       setAlertMessage(error.response?.data?.message || "Invalid credentials! Please try again.");
     }
   };
+  
+  
   
   const handleLogout = () => {
     // Clear session data

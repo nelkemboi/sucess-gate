@@ -3,9 +3,10 @@ const mongoose = require("mongoose");
 // Writer Schema
 const writerSchema = new mongoose.Schema({
   writerId: {
-    type: mongoose.Schema.Types.ObjectId,
-    default: () => new mongoose.Types.ObjectId(), // Automatically generate a unique ObjectId
-    unique: true, // Ensure it's unique
+    type: mongoose.Schema.Types.ObjectId, // Use ObjectId for consistency with MongoDB
+    unique: true, // Ensures each writerId is unique
+    required: true, // Makes it mandatory
+    default: () => new mongoose.Types.ObjectId(), // Automatically generates an ObjectId
   },
   fullName: {
     type: String,
@@ -16,16 +17,28 @@ const writerSchema = new mongoose.Schema({
     required: true,
     unique: true,
   },
-  phone: String,
-  countryCode: String,
+  phone: {
+    type: String,
+  },
+  countryCode: {
+    type: String,
+  },
   password: {
     type: String,
     required: true,
   },
-  expertise: String,
-  qualifications: String,
-  experience: String,
-  attachments: [String],
+  expertise: {
+    type: String,
+  },
+  qualifications: {
+    type: String,
+  },
+  experience: {
+    type: String,
+  },
+  attachments: {
+    type: [String],
+  },
   isApproved: {
     type: Boolean,
     default: false,

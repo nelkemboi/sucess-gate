@@ -73,7 +73,7 @@ const CreateProject = () => {
 
     const userID = localStorage.getItem("userID");
     console.log("UserID:", userID); // Debugging UserID
-    if (!userID || userID.length < 8) { // Adjusted for SG IDs
+    if (!userID || userID.length < 8) {
       setError("Invalid or missing User ID. Please log in again.");
       return;
     }
@@ -99,8 +99,11 @@ const CreateProject = () => {
         },
       });
 
+      const projectId = response.data.projectId; // Get projectId from backend response
+      console.log("Created Project ID:", projectId);
+
       setSuccess("Project created successfully!");
-      setTimeout(() => navigate("/WriterSearch"), 2000); // Navigate after a short delay
+      setTimeout(() => navigate(`/WriterSearch/${projectId}`), 2000); // Navigate to WriterSearch with projectId
     } catch (error) {
       console.error("API Error:", error.response?.data || error.message);
       setError("An error occurred while creating the project. Please try again.");

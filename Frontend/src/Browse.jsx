@@ -40,7 +40,7 @@ const Browse = () => {
         setLoading(false);
 
         const initialPrices = projects.reduce((acc, project) => {
-          acc[project._id] = 3; // Default starting price
+          acc[project.projectId] = 3; // Default starting price
           return acc;
         }, {});
         setPrices(initialPrices);
@@ -97,7 +97,7 @@ const Browse = () => {
       const basePrice = prices[projectId];
       const finalPrice = basePrice * 2.5;
 
-      // Retrieve writer metrics from local storage
+      // Retrieve writer metrics from localStorage
       const writerMetrics = JSON.parse(localStorage.getItem("writerMetrics"));
       if (!writerMetrics) {
         setPopupMessages((prevMessages) => ({
@@ -110,17 +110,19 @@ const Browse = () => {
       const bidData = {
         projectId,
         price: finalPrice,
+        fullName: writerMetrics.fullName,
         writerId: writerMetrics.id,
         questionsAnswered: writerMetrics.questionsAnswered,
         reviews: writerMetrics.reviews,
         onTimeDelivery: writerMetrics.onTimeDelivery,
+        fullName: writerMetrics.fullName,
       };
 
       // Send bid data to the backend
-      const response = await axios.post("http://localhost:5000/api/bids", bidData);
+      const bidResponse = await axios.post("http://localhost:5000/api/bids", bidData);
 
       // Emit the new bid through WebSocket
-      socket.emit("newBid", response.data);
+      socket.emit("newBid", bidResponse.data);
 
       setPopupMessages((prevMessages) => ({
         ...prevMessages,

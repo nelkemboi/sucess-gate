@@ -12,6 +12,7 @@ import CreateProject from "./CreateProject";
 import WriterSignUp from "./WriterSignUp";
 import UserSignUp from "./UserSignUp";
 import WriterSearch from "./WriterSearch"; // Ensure this is imported
+import StudentPay from "./StudentPay"; // Import the PaymentPage component
 
 function App() {
   return (
@@ -36,7 +37,10 @@ function App() {
         <Route path="/CreateProject" element={<CreateProject />} />
 
         {/* Independent WriterSearch route */}
-        <Route path="/WriterSearch" element={<WriterSearch />} />
+        <Route path="/WriterSearch/:projectId" element={<WriterSearch />} />
+
+        {/* Payment page route */}
+        <Route path="/payment/:projectId/:writerId" element={<StudentPay />} />
 
         {/* Independent routes */}
         <Route path="/app/writer-signup" element={<WriterSignUp />} />

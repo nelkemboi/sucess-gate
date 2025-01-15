@@ -52,7 +52,10 @@ router.post("/", upload.array("attachments"), async (req, res) => {
       io.emit("newProject", savedProject);
     }
 
-    res.status(201).json({ message: "Project created successfully.", project: savedProject });
+    res.status(201).json({
+      message: "Project created successfully.",
+      projectId: savedProject._id, // Include projectId in the response
+    });
   } catch (error) {
     console.error("Error creating project:", error);
     res.status(500).json({ message: "Error creating project." });

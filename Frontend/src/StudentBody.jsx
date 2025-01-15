@@ -1,7 +1,8 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Link, Outlet, useNavigate } from "react-router-dom";
 import { FaBell, FaQuestionCircle, FaCog } from "react-icons/fa";
 import { IoMdChatboxes } from "react-icons/io";
+import axios from "axios";
 
 const Navigation = ({ onLogout }) => {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
@@ -9,9 +10,9 @@ const Navigation = ({ onLogout }) => {
   const [isChatOpen, setIsChatOpen] = useState(false); // Chatbox toggle state
   const [messages, setMessages] = useState([]); // Chat messages
   const [input, setInput] = useState(""); // Chat input field
+  const [tasks, setTasks] = useState([]); // Tasks for the active tab
 
   const navigate = useNavigate();
-  
   const userID = localStorage.getItem("userID"); // Get user ID from localStorage
 
   const handleLogout = () => {
@@ -23,9 +24,7 @@ const Navigation = ({ onLogout }) => {
     }
   };
 
-  // Adjusted handleCreateProjectClick
   const handleCreateProjectClick = () => {
-    // Ensure user is redirected to the CreateProject route
     navigate("/CreateProject");
   };
 
@@ -36,7 +35,25 @@ const Navigation = ({ onLogout }) => {
     }
   };
 
-  const tabs = ["Active", "Completed", "Notebank Unlocks"];
+  // Fetch tasks dynamically for the Active tab
+  const fetchTasks = async () => {
+    try {
+      const response = await axios.get("http://localhost:5000/api/tasks/active", {
+        params: { userId: userID },
+      });
+      setTasks(response.data);
+    } catch (error) {
+      console.error("Error fetching tasks:", error);
+    }
+  };
+
+  useEffect(() => {
+    if (activeTab === "Active") {
+      fetchTasks();
+    }
+  }, [activeTab]);
+
+  const tabs = ["Active", "Completed", "Paid"];
 
   return (
     <div className="flex flex-col h-screen relative">
@@ -81,7 +98,6 @@ const Navigation = ({ onLogout }) => {
         </div>
       </div>
 
-      {/* Welcome message section */}
       <div className="bg-white border-b py-2 px-6 shadow-md">
         <p className="text-left text-gray-700 font-medium">
           Welcome, User ID: {userID}
@@ -107,42 +123,40 @@ const Navigation = ({ onLogout }) => {
       <div className="p-6 overflow-auto flex-grow bg-gray-100">
         {activeTab === "Active" && (
           <div>
-            <div className="mb-4">
-              <input
-                type="text"
-                placeholder="Search for question"
-                className="w-full px-4 py-2 border border-gray-300 rounded-md"
-              />
-            </div>
             <table className="w-full bg-white border rounded shadow">
               <thead>
                 <tr className="bg-gray-200">
-                  <th className="px-4 py-2 text-left">Title</th>
-                  <th className="px-4 py-2 text-left">Type</th>
+                  <th className="px-4 py-2 text-left">Project Type</th>
+                  <th className="px-4 py-2 text-left">Subject Area</th>
                   <th className="px-4 py-2 text-left">Time Remaining</th>
                   <th className="px-4 py-2 text-left">Tutor</th>
                   <th className="px-4 py-2 text-left">Status</th>
                 </tr>
               </thead>
               <tbody>
-                <tr>
-                  <td className="px-4 py-2 text-center" colSpan="5">
-                    <div className="flex flex-col items-center">
-                      <div className="w-24 h-24 bg-gray-100 rounded-full flex items-center justify-center">
-                        <span className="text-gray-400">🌴</span>
-                      </div>
-                      <p className="text-gray-500 mt-4">
-                        You have no active questions yet.
-                      </p>
-                    </div>
-                  </td>
-                </tr>
+                {tasks.length > 0 ? (
+                  tasks.map((task, index) => (
+                    <tr key={index}>
+                      <td className="px-4 py-2">{task.title}</td>
+                      <td className="px-4 py-2">{task.type}</td>
+                      <td className="px-4 py-2">{task.timeRemaining}</td>
+                      <td className="px-4 py-2">{task.tutor}</td>
+                      <td className="px-4 py-2 capitalize">{task.status}</td>
+                    </tr>
+                  ))
+                ) : (
+                  <tr>
+                    <td className="px-4 py-2 text-center" colSpan="5">
+                      <p className="text-gray-500 mt-4">No active tasks available.</p>
+                    </td>
+                  </tr>
+                )}
               </tbody>
             </table>
           </div>
         )}
-        {activeTab === "Completed" && <p className="text-gray-500">No completed questions to show.</p>}
-        {activeTab === "Notebank Unlocks" && <p className="text-gray-500">No Notebank unlocks to show.</p>}
+        {activeTab === "Completed" && <p className="text-gray-500">No completed tasks to show.</p>}
+        {activeTab === "Paid" && <p className="text-gray-500">No paid tasks to show.</p>}
         <Outlet />
       </div>
 
@@ -155,7 +169,6 @@ const Navigation = ({ onLogout }) => {
           <IoMdChatboxes size={24} />
         </button>
 
-        {/* Chatbox */}
         {isChatOpen && (
           <div className="fixed bottom-20 right-6 bg-white w-80 h-96 rounded-lg shadow-lg flex flex-col">
             <div className="bg-gray-800 text-white px-4 py-2 flex justify-between items-center">

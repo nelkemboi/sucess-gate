@@ -19,16 +19,15 @@ router.get("/:projectId", async (req, res) => {
   }
 
   try {
-    // Fetch all bids for the project and populate writer details
-    const bids = await Bid.find({ projectId })
-      .populate("writerId", "fullName email expertise qualifications")
-      .sort({ createdAt: -1 }); // Sort by creation date
+    // Fetch bids for the given projectId directly from the Bid collection
+    const bids = await Bid.find({ projectId }).lean();
 
     // If no bids are found, return a message
     if (!bids.length) {
       return res.status(404).json({ message: "No bids found for this project." });
     }
 
+    // Return all bid details as is
     res.status(200).json(bids);
   } catch (error) {
     console.error("Error fetching bids for project:", error);
@@ -36,31 +35,32 @@ router.get("/:projectId", async (req, res) => {
   }
 });
 
+
 /**
  * Route to place or update a bid
  * Method: POST
  * URL: /api/bids/
- * Request Body: { projectId, writerId, price, questionsAnswered, reviews, onTimeDelivery }
+ * Request Body: { projectId, writerId, price, fullName, questionsAnswered, reviews, onTimeDelivery }
  */
 router.post("/", async (req, res) => {
-  const { projectId, writerId, price, questionsAnswered, reviews, onTimeDelivery } = req.body;
+  const { projectId, writerId, price, fullName, questionsAnswered, reviews, onTimeDelivery } = req.body;
 
   // Validate required fields
-  if (!projectId || !writerId || !price) {
-    return res.status(400).json({ error: "Project ID, Writer ID, and Price are required." });
+  if (!projectId || !writerId || !price || !fullName) {
+    return res.status(400).json({ error: "Project ID, Writer ID, Full Name, and Price are required." });
   }
 
-  // Validate ObjectId format
-  if (!mongoose.Types.ObjectId.isValid(projectId) || !mongoose.Types.ObjectId.isValid(writerId)) {
-    return res.status(400).json({ error: "Invalid Project ID or Writer ID format." });
+  // Validate ObjectId format for projectId
+  if (!mongoose.Types.ObjectId.isValid(projectId)) {
+    return res.status(400).json({ error: "Invalid Project ID format." });
   }
 
   try {
     // Create or update a bid
     const bid = await Bid.findOneAndUpdate(
-      { projectId, writerId },
-      { projectId, writerId, price, questionsAnswered, reviews, onTimeDelivery },
-      { new: true, upsert: true } // Create new if not found
+      { projectId, writerId }, // Search for an existing bid by projectId and writerId
+      { projectId, writerId, fullName, price, questionsAnswered, reviews, onTimeDelivery }, // Update or set new values
+      { new: true, upsert: true, setDefaultsOnInsert: true } // Options for update/insert
     );
 
     res.status(201).json({ message: "Bid placed successfully!", bid });
@@ -70,8 +70,10 @@ router.post("/", async (req, res) => {
   }
 });
 
+
+
 /**
- * Route to delete a bid for a specific project
+ * Route to delete bids for a specific project
  * Method: DELETE
  * URL: /api/bids/:projectId
  * Params: projectId
